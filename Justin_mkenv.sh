@@ -33,6 +33,9 @@ sudo groupadd docker
 sudo usermod -aG docker $USER
 newgrp docker
 
+echo "========Installing ollama...========"
+curl -fsSL https://ollama.com/install.sh | sh
+
 echo "========Installing Android Studio...========"
 sudo snap install android-studio --classic -y
 
