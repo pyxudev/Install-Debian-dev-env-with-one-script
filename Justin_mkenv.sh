@@ -55,8 +55,11 @@ sudo apt-get install terraform -y
 # Install Databases
 echo "========Installing Databases:========"
 
-echo "========Installing Postgresql and Redis Server...========"
-sudo apt install postgresql redis-server -y
+echo "========Installing Postgresql...========"
+sudo apt install postgresql postgresql-client libpq-dev -y
+
+echo "========Installing Redis...========"
+sudo apt install redis redis-server -y
 
 echo "========Installing Mongodb...========"
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
