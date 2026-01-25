@@ -5,7 +5,7 @@ sudo apt upgrade
 echo "========Installing environment essentials:========"
 sudo apt install snapd curl unzip xz-utils zip libglu1-mesa -y
 sudo systemctl enable snapd.service snapd.socket
-sudo source /etc/profile.d/apps-bin-path.sh
+. /etc/profile.d/apps-bin-path.sh
 sudo systemctl start snapd.service snapd.socket
 
 echo "========Installing Chrome:========"
