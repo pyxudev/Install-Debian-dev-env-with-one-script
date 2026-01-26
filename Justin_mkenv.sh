@@ -1,5 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOG_FILE="./install.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 sudo apt-get update
-sudo apt upgrade
+sudo apt upgrade　-y
 
 # Install environment essentials
 echo "========Installing environment essentials:========"
@@ -88,7 +94,7 @@ sudo apt install python3 python3-pip python3-venv -y
 echo "========Installing npm/pnpm...========"
 sudo apt install npm -y
 sudo npm install pnpm -g
-sudo pnpm setup
+sudo pnpm setup　|| true
 source ~/.bashrc
 
 echo "========Installing typescript nodejs astro vite vitepress vuejs electron vercel gemini...========"
@@ -105,8 +111,16 @@ echo "========Approve pnpm builds...========"
 pnpm approve-builds -g
 
 echo "========No sudo run Docker...========"
-sudo groupadd docker
-sudo usermod -aG docker $USER
-newgrp docker
+f getent group docker > /dev/null 2>&1; then
+  echo "[INFO] docker group already exists"
+else
+  sudo groupadd docker
+fi
+
+if id -nG "$USER" | grep -qw docker; then
+  echo "[INFO] user '$USER' is already in docker group"
+else
+  sudo usermod -aG docker "$USER"
+fi
 
 export PATH="$HOME/.local/bin:$PATH"
