@@ -111,7 +111,7 @@ echo "========Approve pnpm builds...========"
 pnpm approve-builds -g
 
 echo "========No sudo run Docker...========"
-f getent group docker > /dev/null 2>&1; then
+if getent group docker > /dev/null 2>&1; then
   echo "[INFO] docker group already exists"
 else
   sudo groupadd docker
