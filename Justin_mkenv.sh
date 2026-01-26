@@ -4,6 +4,23 @@ set -euo pipefail
 LOG_FILE="./install.log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
+if [ "$(id -u)" -eq 0 ]; then
+    echo "[ERROR] You are running this script as admin user, please run this script as a normal user"
+    read -rp "Press Enter to exit..." _
+    exit 1
+fi
+
+if sudo -n true >/dev/null 2>&1; then
+    echo "[ERROR] sudo is required but not available."
+    echo "Next steps:"
+    echo "su -"
+    echo "usermod -aG sudo $USER"
+    echo "reboot"
+    read -rp "Press Enter to exit..." _
+    echo "Then run the script again."
+    exit 1
+fi
+
 sudo apt-get update
 sudo apt upgrade　-y
 
@@ -31,6 +48,34 @@ echo "========Installing Development Tools:========"
 
 echo "========Installing Git...========"
 sudo apt install git -y
+
+echo "======== Git global config ========"
+CURRENT_NAME=$(git config --global user.name || true)
+CURRENT_EMAIL=$(git config --global user.email || true)
+
+if [[ -n "$CURRENT_NAME" && -n "$CURRENT_EMAIL" ]]; then
+    echo "[INFO] git global config already set"
+    echo "  user.name  = $CURRENT_NAME"
+    echo "  user.email = $CURRENT_EMAIL"
+else
+    echo "[INFO] git global config is not fully set"
+
+    if [ -t 0 ]; then
+        read -rp "Enter your git user name: " GIT_NAME
+        read -rp "Enter your git email: " GIT_EMAIL
+
+        if [[ -n "$GIT_NAME" && -n "$GIT_EMAIL" ]]; then
+        git config --global user.name "$GIT_NAME"
+        git config --global user.email "$GIT_EMAIL"
+
+        echo "[INFO] git global config configured"
+        else
+        echo "[WARN] user.name or user.email is empty. Skipping git config"
+        fi
+    else
+        echo "[WARN] non-interactive shell detected. Skipping git config"
+    fi
+fi
 
 echo "========Installing aws cli...========"
 sudo snap install aws-cli --classic
@@ -72,8 +117,8 @@ sudo apt install redis redis-server -y
 
 echo "========Installing Mongodb...========"
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
-   sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
-   --dearmor
+    sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+    --dearmor
 echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 sudo apt-get update
 sudo apt-get install -y mongodb-org
@@ -94,7 +139,7 @@ sudo apt install python3 python3-pip python3-venv -y
 echo "========Installing npm/pnpm...========"
 sudo apt install npm -y
 sudo npm install pnpm -g
-sudo pnpm setup　|| true
+sudo pnpm setup || true
 source ~/.bashrc
 
 echo "========Installing typescript nodejs astro vite vitepress vuejs electron vercel gemini...========"
