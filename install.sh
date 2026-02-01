@@ -15,7 +15,7 @@ sudo apt upgrade -y
 
 # Install environment essentials
 echo "========Installing environment essentials:========"
-sudo apt install snapd curl wget gnupg unzip xz-utils zip libglu1-mesa -y
+sudo apt install -y snapd curl wget gnupg unzip xz-utils zip libglu1-mesa ufw
 sudo systemctl enable snapd.service snapd.socket
 . /etc/profile.d/apps-bin-path.sh
 sudo systemctl start snapd.service snapd.socket
