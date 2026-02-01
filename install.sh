@@ -125,7 +125,7 @@ sudo npm install pnpm -g
 npm fund
 pnpm setup
 source /home/$USER/.bashrc
-pnpm install -g typescript astro nodejs vite vitepress vue electron vercel @google/gemini-cli
+pnpm install -g typescript astro nodejs vite vitepress vue electron vercel @google/gemini-cli @salesforce/cli
 pnpm approve-builds -g
 
 # Applying operstions
