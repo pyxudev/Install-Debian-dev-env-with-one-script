@@ -10,19 +10,8 @@ if [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
-if sudo -n true >/dev/null 2>&1; then
-    echo "[ERROR] sudo is required but not available."
-    echo "Next steps:"
-    echo "su -"
-    echo "usermod -aG sudo $USER"
-    echo "reboot"
-    read -rp "Press Enter to exit..." _
-    echo "Then run the script again."
-    exit 1
-fi
-
 sudo apt-get update
-sudo apt upgrade　-y
+sudo apt upgrade -y
 
 # Install environment essentials
 echo "========Installing environment essentials:========"
@@ -41,7 +30,10 @@ sudo apt install -y ibus-mozc
 
 # Install MS Editor
 echo "========Installing snap store packages...========"
-sudo snap install msedit localsend yazi ghostty --classic
+sudo snap install msedit
+sudo snap install localsend
+sudo snap install yazi --classic
+sudo snap install ghostty --classic
 
 # Install Development Tools
 echo "========Installing Development Tools:========"
@@ -77,11 +69,10 @@ else
     fi
 fi
 
-echo "========Installing aws cli...========"
+echo "========Installing AWS CLI...========"
 sudo snap install aws-cli --classic
 
 echo "========Installing Docker...========"
-sudo apt-get remove docker docker-engine docker.io containerd runc
 sudo apt-get install ca-certificates gnupg lsb-release -y
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -98,7 +89,7 @@ echo "========Installing Android Studio...========"
 sudo snap install android-studio --classic
 
 echo "========Installing terraform...========"
-sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+sudo apt-get update && sudo apt-get install -y gnupg
 wget -O- https://apt.releases.hashicorp.com/gpg | \
 gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
 gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
@@ -114,14 +105,6 @@ sudo apt install postgresql postgresql-client libpq-dev -y
 
 echo "========Installing Redis...========"
 sudo apt install redis redis-server -y
-
-echo "========Installing Mongodb...========"
-curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
-    sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
-    --dearmor
-echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-sudo apt-get update
-sudo apt-get install -y mongodb-org
 
 # Install programming languages
 echo "========Installing programming languages:========"
@@ -139,22 +122,12 @@ sudo apt install python3 python3-pip python3-venv -y
 echo "========Installing npm/pnpm...========"
 sudo apt install npm -y
 sudo npm install pnpm -g
+npm fund
 sudo pnpm setup || true
 source ~/.bashrc
 
-echo "========Installing typescript nodejs astro vite vitepress vuejs electron vercel gemini...========"
-pnpm install -g typescript astro nodejs vite vitepress vue electron vercel @google/gemini-cli
-
-# Install pip packages
-echo "========Installing pip packages...========"
-pip install virtualenv pandas numpy matplotlib flask requests
-
 # Applying operstions
 echo "========Applying operations:========"
-
-echo "========Approve pnpm builds...========"
-pnpm approve-builds -g
-
 echo "========No sudo run Docker...========"
 if getent group docker > /dev/null 2>&1; then
   echo "[INFO] docker group already exists"
@@ -170,4 +143,4 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
-echo -e "Next steps:\nManully install VSCode, Kiro, Mysql then reboot."
+echo -e "Next steps:\nManully install VSCode, Kiro, Mysql then reboot.\nTo install pnpm packages, run:\npnpm install -g typescript astro nodejs vite vitepress vue electron vercel @google/gemini-cli"
