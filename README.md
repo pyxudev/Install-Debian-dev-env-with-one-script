@@ -1,145 +1,150 @@
-# Debian Development Environment Bootstrap Script
+# Linux Development Environment Setup Script
 
-新規にインストールした **Debian 環境** に対して、  
-**開発に必要なツール・設定を一括でセットアップ**するためのスクリプトです。
+Ubuntu/Debian系ディストリビューション向けの開発環境を一括でセットアップするシェルスクリプトです。
 
-- 初回マシンセットアップを高速化
-- 手動設定ミスを防止
-- 冪等性を意識した安全な実装
-- ログ出力対応（トラブルシュートしやすい）
-- リモート実行可能！
-```
-curl -s https://github.com/pyxudev/Install-Debian-dev-env-with-one-script/blob/main/install.sh | bash
-```
+## 概要
 
----
+このスクリプトは、新しいLinux環境で必要な開発ツールやアプリケーションを自動的にインストールします。Web開発、モバイル開発、インフラ管理など、幅広い用途に対応した環境を構築できます。
 
-## ✨ Features
+## インストールされるもの
 
-- APT / Snap による基本ツールのインストール
-- Docker / Docker Compose のセットアップ
-- docker グループの存在・所属チェック（安全）
-- Git global config（user.name / user.email）の対話設定
-- sudo 実行権限の事前チェック
-- エラー時にターミナルが即終了しない UX
-- 全実行ログを `install.log` に保存
+### 基本ツール
+- Chrome ブラウザ
+- 日本語入力 (ibus-mozc)
+- snap パッケージマネージャー
+- MS Editor
+- LocalSend
+- Yazi (ファイルマネージャー)
+- Ghostty (ターミナル)
+- CopyQ
 
----
-
-## 📦 Installed Tools (example)
-
-- git
-- curl / wget
-- Docker / Docker Compose
-- Node.js / pnpm
+### 開発ツール
+- Git
+- Docker & Docker Compose
+- AWS CLI
 - Terraform
-- Databases (PostgreSQL / Redis)
-- その他 開発に必要な基本パッケージ
+- Android Studio
+- Ollama (LLM実行環境)
+- Kiro
 
-※ 実際の内容は `install.sh` を参照してください。
+### プログラミング言語・ランタイム
+- Go
+- Node.js & npm
+- Python3 & pip
+- pnpm
 
----
+### グローバルnpmパッケージ
+- TypeScript
+- Astro
+- Vite / VitePress
+- Vue
+- Electron
+- Vercel CLI
+- Google Gemini CLI
+- Salesforce CLI
 
-## 🚀 Usage
+### データベース
+- PostgreSQL
+- Redis
 
-### 1. リポジトリを取得
+### PHP環境
+- PHP (MySQL, GD, cURL, XML, mbstring拡張付き)
+
+## 使用方法
+
+### リモートから直接実行
 
 ```bash
-git clone <this-repository>
-cd <this-repository>
+curl -fsSL https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh | bash
 ```
 
-### 2. 実行権限を付与
+または
 
 ```bash
+wget -qO- https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh | bash
+```
+
+### ダウンロードしてから実行
+
+```bash
+# スクリプトをダウンロード
+wget https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh
+
+# 実行権限を付与
 chmod +x install.sh
-```
 
-### 3. スクリプト実行（一般ユーザーで）
-
-```bash
+# 実行
 ./install.sh
 ```
 
-⚠️ **root では実行しないでください**
+## 前提条件
 
----
+- Ubuntu 20.04以降、またはDebian系ディストリビューション
+- インターネット接続
+- sudo権限を持つ通常ユーザーアカウント（rootユーザーでは実行不可）
 
-## 🔐 sudo 権限について
+## 注意事項
 
-このスクリプトは `sudo` を使用します。
+⚠️ **重要な注意点**
 
-### sudo が使えない場合
+1. **rootユーザーで実行しないでください**  
+   セキュリティ上の理由から、このスクリプトはrootユーザーでの実行を拒否します。通常ユーザーで実行してください。
 
-以下のメッセージを表示して安全に終了します：
+2. **インストールには時間がかかります**  
+   環境によりますが、すべてのパッケージのインストールには30分〜1時間程度かかる場合があります。
 
-```text
-[ERROR] sudo is NOT available for user
-Please run the following commands as root:
-  su -
-  usermod -aG sudo <username>
-```
+3. **ログファイル**  
+   実行ログは `./install.log` に保存されます。問題が発生した場合はこのファイルを確認してください。
 
-管理者で以下を実行してください：
+4. **Git設定**  
+   初回実行時、Git のユーザー名とメールアドレスの入力を求められます。対話的に設定されます。
 
+5. **再起動が必要**  
+   スクリプト実行後、特にDockerグループの変更を反映させるため、システムの再起動が推奨されます。
+
+## インストール後の手順
+
+1. **システムの再起動**
+   ```bash
+   sudo reboot
+   ```
+
+2. **Dockerの動作確認**
+   ```bash
+   docker run hello-world
+   ```
+
+## トラブルシューティング
+
+### Dockerがsudoなしで実行できない
+
+再ログインまたは再起動してください：
 ```bash
-su -
-usermod -aG sudo <username>
-reboot
+sudo reboot
 ```
 
-再ログイン後にスクリプトを再実行してください。
+### snapパッケージのインストールに失敗する
 
----
-
-## 📝 Git Global Config
-
-初回実行時、以下を **対話形式** で設定します：
-
-- `git config --global user.name`
-- `git config --global user.email`
-
-すでに設定されている場合はスキップされます。
-
----
-
-## 📄 Logs
-
-すべての標準出力・標準エラーはログに保存されます。
-
-```text
-~/install.log
+snapdサービスを再起動してください：
+```bash
+sudo systemctl restart snapd
 ```
 
-ログ例：
+### pnpmのコマンドが見つからない
 
-```text
-======== install started: 2026-01-26 14:32:10 ========
-[INFO] docker group already exists
-[INFO] user 'user' is already in docker group
+シェルを再起動するか、以下を実行してください：
+```bash
+source ~/.bashrc
 ```
 
----
+## カスタマイズ
 
-## 🧠 Design Policy
+不要なパッケージがある場合は、スクリプトをダウンロードして該当する行をコメントアウトまたは削除してから実行してください。
 
-- 冪等性を重視（再実行しても壊れにくい）
-- `set -e` 環境でも安全に動作
-- 対話 / 非対話の両対応
-- 失敗時も「次に何をすべきか」を明示
+## ライセンス
 
----
+MIT License
 
-## ⚠️ Notes
+## 貢献
 
-- Docker グループ追加後は **ログアウト / 再ログイン** が必要です。
-- 環境にて実行した際に問題が発生した場合は Issue をあげてください。
-
----
-
-## 📌 Recommended Extensions
-
-- SSH key 自動生成
-- GitHub CLI (`gh`) セットアップ
-- dotfiles 管理（chezmoi / yadm）
-- cloud-init 対応
+バグ報告や機能リクエストは、GitHubのIssuesからお願いします。プルリクエストも歓迎します。
