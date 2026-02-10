@@ -1,165 +1,154 @@
-# Linux Development Environment Setup Script
+#!/usr/bin/env bash
+set -euo pipefail
 
-Ubuntu/Debian系ディストリビューション向けの開発環境を一括でセットアップするシェルスクリプトです。
+LOG_FILE="./install.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
 
-## 概要
+if [ "$(id -u)" -eq 0 ]; then
+    echo "[ERROR] You are running this script as admin user, please run this script as a normal user"
+    read -rp "Press Enter to exit..." _
+    exit 1
+fi
 
-このスクリプトは、新しいLinux環境で必要な開発ツールやアプリケーションを自動的にインストールします。Web開発、モバイル開発、インフラ管理など、幅広い用途に対応した環境を構築できます。
+sudo apt-get update
+sudo apt upgrade -y
 
-## インストールされるもの
+# Install environment essentials
+echo "========Installing environment essentials:========"
+sudo apt install -y snapd curl wget gnupg unzip xz-utils zip libglu1-mesa ufw copyq php php-mysql php-gd php-curl php-xml php-mbstring
+sudo systemctl enable snapd.service snapd.socket
+. /etc/profile.d/apps-bin-path.sh
+sudo systemctl start snapd.service snapd.socket
 
-### 基本ツール
-- Chrome ブラウザ
-- 日本語入力 (ibus-mozc)
-- snap パッケージマネージャー
-- MS Editor
-- LocalSend
-- Yazi (ファイルマネージャー)
-- Ghostty (ターミナル)
-- CopyQ
+echo "========Installing Chrome:========"
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install -y ./google-chrome-stable_current_amd64.deb
+rm ./google-chrome-stable_current_amd64.deb 
 
-### 開発ツール
-- Git
-- Docker & Docker Compose
-- AWS CLI
-- Terraform
-- Android Studio
-- Ollama (LLM実行環境)
-- Kiro
+echo "========Installing Japanese Inputs:========"
+sudo apt install -y ibus-mozc
 
-### プログラミング言語・ランタイム
-- Go
-- Node.js & npm
-- Python3 & pip
-- pnpm
+# Install MS Editor
+echo "========Installing snap store packages...========"
+sudo snap install msedit
+sudo snap install localsend
+sudo snap install yazi --classic
+sudo snap install ghostty --classic
 
-### グローバルnpmパッケージ
-- TypeScript
-- Astro
-- Vite / VitePress
-- Vue
-- Electron
-- Vercel CLI
-- Google Gemini CLI
-- Salesforce CLI
+# Install Development Tools
+echo "========Installing Development Tools:========"
 
-### データベース
-- PostgreSQL
-- Redis
+echo "========Installing VSCode...========"
+sudo snap install code --classic
 
-### PHP環境
-- PHP (MySQL, GD, cURL, XML, mbstring拡張付き)
+echo "========Installing Git...========"
+sudo apt install git -y
 
-## 使用方法
+echo "======== Git global config ========"
+CURRENT_NAME=$(git config --global user.name || true)
+CURRENT_EMAIL=$(git config --global user.email || true)
 
-### リモートから直接実行
+if [[ -n "$CURRENT_NAME" && -n "$CURRENT_EMAIL" ]]; then
+    echo "[INFO] git global config already set"
+    echo "  user.name  = $CURRENT_NAME"
+    echo "  user.email = $CURRENT_EMAIL"
+else
+    echo "[INFO] git global config is not fully set"
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh | bash
-```
+    if [ -t 0 ]; then
+        read -rp "Enter your git user name: " GIT_NAME
+        read -rp "Enter your git email: " GIT_EMAIL
 
-または
+        if [[ -n "$GIT_NAME" && -n "$GIT_EMAIL" ]]; then
+        git config --global user.name "$GIT_NAME"
+        git config --global user.email "$GIT_EMAIL"
 
-```bash
-wget -qO- https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh | bash
-```
+        echo "[INFO] git global config configured"
+        else
+        echo "[WARN] user.name or user.email is empty. Skipping git config"
+        fi
+    else
+        echo "[WARN] non-interactive shell detected. Skipping git config"
+    fi
+fi
 
-### ダウンロードしてから実行
+echo "========Installing AWS CLI...========"
+sudo snap install aws-cli --classic
 
-```bash
-# スクリプトをダウンロード
-wget https://raw.githubusercontent.com/pyxudev/Install-Debian-dev-env-with-one-script/main/install.sh
+echo "========Installing Docker...========"
+sudo apt-get install ca-certificates gnupg lsb-release -y
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
 
-# 実行権限を付与
-chmod +x install.sh
+echo "========Installing Ollama...========"
+curl -fsSL https://ollama.com/install.sh | sh
 
-# 実行
-./install.sh
-```
+echo "========Installing Kiro...========"
+curl -fsSL https://cli.kiro.dev/install | bash
 
-## 前提条件
+echo "========Installing Android Studio...========"
+sudo snap install android-studio --classic
 
-- Ubuntu 20.04以降、またはDebian系ディストリビューション
-- インターネット接続
-- sudo権限を持つ通常ユーザーアカウント（rootユーザーでは実行不可）
+echo "========Installing terraform...========"
+sudo apt-get update && sudo apt-get install -y gnupg
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update
+sudo apt-get install terraform -y
 
-## 注意事項
+# Install Databases
+echo "========Installing Databases:========"
 
-⚠️ **重要な注意点**
+echo "========Installing MySQL...========"
+sudo apt install mysql-server -y
 
-1. **rootユーザーで実行しないでください**  
-   セキュリティ上の理由から、このスクリプトはrootユーザーでの実行を拒否します。通常ユーザーで実行してください。
+echo "========Installing Postgresql...========"
+sudo apt install postgresql postgresql-client libpq-dev -y
 
-2. **インストールには時間がかかります**  
-   環境によりますが、すべてのパッケージのインストールには30分〜1時間程度かかる場合があります。
+echo "========Installing Redis...========"
+sudo apt install redis redis-server -y
 
-3. **ログファイル**  
-   実行ログは `./install.log` に保存されます。問題が発生した場合はこのファイルを確認してください。
+# Install programming languages
+echo "========Installing programming languages:========"
 
-4. **Git設定**  
-   初回実行時、Git のユーザー名とメールアドレスの入力を求められます。対話的に設定されます。
+echo "========Installing Golang...========"
+sudo snap install go --classic
 
-5. **手動インストールが必要なもの**  
-   以下のツールは手動でインストールする必要があります：
-   - Visual Studio Code
-   - MySQL（PostgreSQLの代わりに使用する場合）
+echo "========Installing nodejs...========"
+sudo apt install nodejs -y
 
-6. **再起動が必要**  
-   スクリプト実行後、特にDockerグループの変更を反映させるため、システムの再起動が推奨されます。
+echo "========Installing python3 and pip...========"
+sudo apt install python3 python3-pip python3-venv -y
 
-## インストール後の手順
+# Install npm/pnpm and packages
+echo "========Installing npm/pnpm...========"
+sudo apt install npm -y
+sudo npm install pnpm -g
+npm fund
+pnpm setup
+source /home/$USER/.bashrc
+pnpm install -g typescript astro nodejs vite vitepress vue electron vercel @google/gemini-cli @salesforce/cli
+pnpm approve-builds -g
 
-1. **VSCodeのインストール**
-   ```bash
-   sudo snap install code --classic
-   ```
+# Applying operstions
+echo "========Applying operations:========"
+echo "========No sudo run Docker...========"
+if getent group docker > /dev/null 2>&1; then
+  echo "[INFO] docker group already exists"
+else
+  sudo groupadd docker
+fi
 
-2. **MySQLのインストール（必要な場合）**
-   ```bash
-   sudo apt install mysql-server -y
-   ```
+if id -nG "$USER" | grep -qw docker; then
+  echo "[INFO] user '$USER' is already in docker group"
+else
+  sudo usermod -aG docker "$USER"
+fi
 
-3. **システムの再起動**
-   ```bash
-   sudo reboot
-   ```
+export PATH="$HOME/.local/bin:$PATH"
 
-4. **Dockerの動作確認**
-   ```bash
-   docker run hello-world
-   ```
-
-## トラブルシューティング
-
-### Dockerがsudoなしで実行できない
-
-再ログインまたは再起動してください：
-```bash
-sudo reboot
-```
-
-### snapパッケージのインストールに失敗する
-
-snapdサービスを再起動してください：
-```bash
-sudo systemctl restart snapd
-```
-
-### pnpmのコマンドが見つからない
-
-シェルを再起動するか、以下を実行してください：
-```bash
-source ~/.bashrc
-```
-
-## カスタマイズ
-
-不要なパッケージがある場合は、スクリプトをダウンロードして該当する行をコメントアウトまたは削除してから実行してください。
-
-## ライセンス
-
-MIT License
-
-## 貢献
-
-バグ報告や機能リクエストは、GitHubのIssuesからお願いします。プルリクエストも歓迎します。
+read -p "Next steps: Manull install other packages then reboot."
