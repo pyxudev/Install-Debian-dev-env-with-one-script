@@ -9,6 +9,7 @@ Ubuntu/Debian系ディストリビューション向けの開発環境を一括�
 ## インストールされるもの
 
 ### 基本ツール
+- nginx
 - Chrome ブラウザ
 - 日本語入力 (ibus-mozc)
 - snap パッケージマネージャー
@@ -20,12 +21,12 @@ Ubuntu/Debian系ディストリビューション向けの開発環境を一括�
 
 ### 開発ツール
 - Git
+- VSCode
 - Docker & Docker Compose
 - AWS CLI
 - Terraform
 - Android Studio
 - Ollama (LLM実行環境)
-- Kiro
 
 ### プログラミング言語・ランタイム
 - Go
