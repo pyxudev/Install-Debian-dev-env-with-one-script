@@ -15,7 +15,7 @@ sudo apt upgrade -y
 
 # Install environment essentials
 echo "========Installing environment essentials:========"
-sudo apt install -y snapd curl wget gnupg unzip xz-utils zip libglu1-mesa ufw copyq php php-mysql php-gd php-curl php-xml php-mbstring
+sudo apt install -y snapd curl wget gnupg unzip xz-utils zip libglu1-mesa ufw copyq php php-mysql php-gd php-curl php-xml php-mbstring nginx
 sudo systemctl enable snapd.service snapd.socket
 . /etc/profile.d/apps-bin-path.sh
 sudo systemctl start snapd.service snapd.socket
