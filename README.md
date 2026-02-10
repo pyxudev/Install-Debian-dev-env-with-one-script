@@ -1,4 +1,4 @@
-# Linux Development Environment Setup Script
+# Debian Development Environment Setup Script
 
 Ubuntu/Debian系ディストリビューション向けの開発環境を一括でセットアップするシェルスクリプトです。
 
