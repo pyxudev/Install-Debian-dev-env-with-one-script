@@ -121,8 +121,11 @@ sudo snap install go --classic
 echo "========Installing nodejs...========"
 sudo apt install nodejs -y
 
-echo "========Installing python3 and pip...========"
-sudo apt install python3 python3-pip python3-venv -y
+echo "========Installing python3, pip, pipx, uv...========"
+sudo apt install python3 python3-pip python3-venv pipx python3-all python-is-python3 -y
+pipx ensurepath
+source ~/.bashrc
+pipx install uv
 
 # Install npm/pnpm and packages
 echo "========Installing npm/pnpm...========"
